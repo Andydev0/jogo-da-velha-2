@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Jogo da Velha 2</title>
+    <style>
+        body{
+            margin-left: auto;
+            margin-right: auto; 
+            margin-top: 10%;
+            width: 30%;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .sub-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+            border: 1px solid black;
+            position: relative;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            border: 1px solid grey;
+            text-align: center;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .X {
+            color: red;
+        }
+        .O {
+            color: blue;
+        }
+        .winner.X {
+            background-color: red;
+            color: white;
+        }
+        .winner.O {
+            background-color: blue;
+            color: white;
+        }
+        .winner.draw {
+            background: linear-gradient(to right, red 50%, blue 50%);
+            color: white;
+        }
+        .winner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            font-size: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+        .winner.draw {
+        background: linear-gradient(to right, red 50%, blue 50%);
+    }
+
+    </style>
+</head>
+<body>
+
+<div class="board" id="board">
+    <!-- Conteúdo gerado por JavaScript -->
+</div>
+
+<script>
+    let currentPlayer = 'X';
+    const mainBoard = Array(9).fill(null);
+    const board = [];
+    for (let i = 0; i < 9; i++) {
+        const subBoard = [];
+        for (let j = 0; j < 9; j++) {
+            subBoard.push('');
+        }
+        board.push(subBoard);
+    }
+    let nextBoard = -1;
+
+    function render() {
+        const boardElement = document.getElementById('board');
+        let boardHtml = '';
+        for (let i = 0; i < 9; i++) {
+            boardHtml += `<div class="sub-board" style="opacity:${nextBoard === -1 || nextBoard === i || mainBoard[i] !== null ? 1 : 0.3}">`;
+            for (let j = 0; j < 9; j++) {
+                boardHtml += `<div class="cell ${board[i][j]}" onclick="makeMove(${i}, ${j})">${board[i][j]}</div>`;
+            }
+            if (mainBoard[i] !== null) {
+                boardHtml += `<div class="winner ${mainBoard[i]}">${mainBoard[i] === 'draw' ? '' : mainBoard[i]}</div>`;
+            }
+            boardHtml += '</div>';
+        }
+        boardElement.innerHTML = boardHtml;
+    }
+
+    function checkWinner(subBoard) {
+        const lines = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
+        ];
+        for (let line of lines) {
+            if (subBoard[line[0]] && subBoard[line[0]] === subBoard[line[1]] && subBoard[line[0]] === subBoard[line[2]]) {
+                return subBoard[line[0]];
+            }
+        }
+        return null;
+    }
+
+    function makeMove(mainPos, subPos) {
+        if ((nextBoard === -1 || mainBoard[nextBoard] !== null || nextBoard === mainPos) && board[mainPos][subPos] === '' && mainBoard[mainPos] === null) {
+            board[mainPos][subPos] = currentPlayer;
+            const winner = checkWinner(board[mainPos]);
+            if (winner) {
+                mainBoard[mainPos] = winner;
+            }
+            nextBoard = mainBoard[subPos] === null ? subPos : -1;
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            render();
+        }
+    }
+
+    function checkDraw(subBoard) {
+        return subBoard.every(cell => cell !== '');
+    }
+
+    function makeMove(mainPos, subPos) {
+        if ((nextBoard === -1 || mainBoard[nextBoard] !== null || nextBoard === mainPos) && board[mainPos][subPos] === '' && mainBoard[mainPos] === null) {
+            board[mainPos][subPos] = currentPlayer;
+            const winner = checkWinner(board[mainPos]);
+            const draw = checkDraw(board[mainPos]);
+
+            if (winner) {
+                mainBoard[mainPos] = winner;
+            } else if (draw) {
+                mainBoard[mainPos] = 'draw';
+            }
+            
+            nextBoard = mainBoard[subPos] === null ? subPos : -1;
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            render();
+        }
+    }
+
+    render();
+</script>
+
+</body>
+</html>
