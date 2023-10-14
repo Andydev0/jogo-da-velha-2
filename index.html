@@ -3,13 +3,14 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jogo da Velha 2</title>
     <style>
         body {
             margin-left: auto;
             margin-right: auto;
             margin-top: 5%;
-            width: 35%;
+            width: 20%;
         }
 
         .board {
@@ -185,6 +186,66 @@
 
         #restartButton:hover {
             background-color: #FF8C00;
+        }
+
+
+        @media only screen and (max-width: 600px) {
+            body {
+                width: 100%;
+                font-size: 14px;
+            }
+
+            .board {
+                gap: 5px;
+            }
+
+            .sub-board {
+                gap: 1px;
+            }
+
+            .cell {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+
+            .winner {
+                font-size: 60px;
+            }
+
+            #gameInfo {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            #scores {
+                margin-top:10px;
+                gap: 20px;
+                font-size: 16px;
+            }
+
+            #resetButton,
+            #restartButton {
+                font-size: 14px;
+                padding: 8px 16px;
+            }
+
+            button#rulesButton {
+                font-size: 16px;
+                margin-top: 15px;
+            }
+
+            .modal-content {
+                max-width: 90vw;
+                overflow: auto;
+            }
+        }
+
+        /* Consulta de mídia para telas médias (entre 600px e 900px) */
+        @media only screen and (min-width: 601px) and (max-width: 900px) {
+            body {
+                width: 80%;
+            }
         }
     </style>
 </head>
