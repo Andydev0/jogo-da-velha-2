@@ -1,20 +1,23 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <title>Jogo da Velha 2</title>
     <style>
-        body{
+        body {
             margin-left: auto;
-            margin-right: auto; 
-            margin-top: 10%;
-            width: 30%;
+            margin-right: auto;
+            margin-top: 5%;
+            width: 35%;
         }
+
         .board {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
         }
+
         .sub-board {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -22,6 +25,7 @@
             border: 1px solid black;
             position: relative;
         }
+
         .cell {
             width: 50px;
             height: 50px;
@@ -30,24 +34,30 @@
             font-size: 24px;
             cursor: pointer;
         }
+
         .X {
             color: red;
         }
+
         .O {
             color: blue;
         }
+
         .winner.X {
             background-color: red;
             color: white;
         }
+
         .winner.O {
             background-color: blue;
             color: white;
         }
+
         .winner.draw {
-            background: linear-gradient(to right, red 50%, blue 50%);
+            background: linear-gradient(to right top, red 50%, blue 50%);
             color: white;
         }
+
         .winner {
             position: absolute;
             top: 0;
@@ -60,98 +70,314 @@
             justify-content: center;
             pointer-events: none;
         }
-        .winner.draw {
-        background: linear-gradient(to right, red 50%, blue 50%);
-    }
 
+
+        #gameInfo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        #scores {
+            display: flex;
+            gap: 20px;
+        }
+
+        #resetButton {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 0 auto;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #resetButton:hover {
+            background-color: #45a049;
+        }
+
+        #turnIndicator {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .board {
+            position: relative;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 1;
+            align-items: center;
+            justify-content: center;
+            display: flex;
+        }
+
+        .modal-content {
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .close-button {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+            font-size: 25px;
+            color: #aaa;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close-button:hover {
+            color: #000;
+        }
+
+        button#rulesButton {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button#rulesButton:hover {
+            background-color: #45a049;
+        }
+
+        #restartButton {
+            background-color: #FFA500;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin-left: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #restartButton:hover {
+            background-color: #FF8C00;
+        }
     </style>
 </head>
+
 <body>
 
-<div class="board" id="board">
-    <!-- Conteúdo gerado por JavaScript -->
-</div>
+    <div id="gameInfo">
+        <div id="scores">
+            <span id="scoreX">X: 0</span>
+            <span id="scoreO">O: 0</span>
+        </div>
+        <span id="turnIndicator">Vez de: X</span>
+        <button id="resetButton" onclick="resetGame()" style="display:none;">Jogar novamente</button>
+        <button id="restartButton" onclick="restartMatch()">Reiniciar Partida</button>
 
-<script>
-    let currentPlayer = 'X';
-    const mainBoard = Array(9).fill(null);
-    const board = [];
-    for (let i = 0; i < 9; i++) {
-        const subBoard = [];
-        for (let j = 0; j < 9; j++) {
-            subBoard.push('');
-        }
-        board.push(subBoard);
-    }
-    let nextBoard = -1;
+    </div>
 
-    function render() {
-        const boardElement = document.getElementById('board');
-        let boardHtml = '';
+
+    <div class="board" id="board">
+        <!-- Conteúdo gerado por JavaScript -->
+    </div>
+
+    <div class="modal" id="rulesModal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <h2>Regras do Jogo</h2>
+            <p>1. Um jogador começa jogando em qualquer um dos 9 mini-jogos da velha.<br><br>
+                2. O próximo jogador deve jogar no mini-jogo correspondente à posição escolhida pelo jogador anterior no
+                mini-jogo anterior. Por exemplo, se o jogador 1 colocar sua peça no canto superior esquerdo do
+                mini-jogo, o jogador 2 deve jogar no mini-jogo da velha do canto superior esquerdo do tabuleiro
+                maior.<br><br>
+                3. O objetivo continua sendo alinhar 3 peças em uma linha, coluna ou diagonal, mas neste caso, seria
+                alinhando as vitórias nos mini-jogos da velha.<br><br>
+                4. Se um mini-jogo da velha é vencido por um jogador, esse mini-jogo conta como uma peça desse jogador
+                no
+                tabuleiro maior.</p>
+        </div>
+    </div>
+    <button id="rulesButton" onclick="openModal()">Regras do Jogo</button>
+
+    </div>
+
+
+
+    <script>
+        let currentPlayer = 'X';
+        const mainBoard = Array(9).fill(null);
+        const board = [];
         for (let i = 0; i < 9; i++) {
-            boardHtml += `<div class="sub-board" style="opacity:${nextBoard === -1 || nextBoard === i || mainBoard[i] !== null ? 1 : 0.3}">`;
+            const subBoard = [];
             for (let j = 0; j < 9; j++) {
-                boardHtml += `<div class="cell ${board[i][j]}" onclick="makeMove(${i}, ${j})">${board[i][j]}</div>`;
+                subBoard.push('');
             }
-            if (mainBoard[i] !== null) {
-                boardHtml += `<div class="winner ${mainBoard[i]}">${mainBoard[i] === 'draw' ? '' : mainBoard[i]}</div>`;
-            }
-            boardHtml += '</div>';
+            board.push(subBoard);
         }
-        boardElement.innerHTML = boardHtml;
-    }
+        let nextBoard = -1;
 
-    function checkWinner(subBoard) {
-        const lines = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8],
-            [0, 3, 6], [1, 4, 7], [2, 5, 8],
-            [0, 4, 8], [2, 4, 6]
-        ];
-        for (let line of lines) {
-            if (subBoard[line[0]] && subBoard[line[0]] === subBoard[line[1]] && subBoard[line[0]] === subBoard[line[2]]) {
-                return subBoard[line[0]];
+        let scoreX = 0;
+        let scoreO = 0;
+
+        function render() {
+            const boardElement = document.getElementById('board');
+            let boardHtml = '';
+            for (let i = 0; i < 9; i++) {
+                boardHtml += `<div class="sub-board" style="opacity:${nextBoard === -1 || nextBoard === i || mainBoard[i] !== null ? 1 : 0.3}">`;
+                for (let j = 0; j < 9; j++) {
+                    boardHtml += `<div class="cell ${board[i][j]}" onclick="makeMove(${i}, ${j})">${board[i][j]}</div>`;
+                }
+                if (mainBoard[i] !== null) {
+                    boardHtml += `<div class="winner ${mainBoard[i]}">${mainBoard[i] === 'draw' ? '' : mainBoard[i]}</div>`;
+                }
+                boardHtml += '</div>';
             }
+            boardElement.innerHTML = boardHtml;
+
+            document.getElementById('turnIndicator').innerText = `Vez de: ${currentPlayer}`;
         }
-        return null;
-    }
 
-    function makeMove(mainPos, subPos) {
-        if ((nextBoard === -1 || mainBoard[nextBoard] !== null || nextBoard === mainPos) && board[mainPos][subPos] === '' && mainBoard[mainPos] === null) {
-            board[mainPos][subPos] = currentPlayer;
-            const winner = checkWinner(board[mainPos]);
-            if (winner) {
-                mainBoard[mainPos] = winner;
+        function checkWinner(subBoard) {
+            const lines = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+            for (let line of lines) {
+                if (subBoard[line[0]] && subBoard[line[0]] === subBoard[line[1]] && subBoard[line[0]] === subBoard[line[2]]) {
+                    return subBoard[line[0]];
+                }
             }
-            nextBoard = mainBoard[subPos] === null ? subPos : -1;
-            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            return null;
+        }
+
+        function checkDraw(subBoard) {
+            return subBoard.every(cell => cell !== '');
+        }
+
+        function checkMainBoardDraw() {
+            return mainBoard.every(cell => cell !== null);
+        }
+
+        function showRestartButton() {
+            document.getElementById('resetButton').style.display = 'block';
+        }
+
+        function endGame(message) {
+            document.getElementById('board').style.pointerEvents = 'none';
+            showRestartButton();
+            alert(message);
+        }
+
+        function resetGame() {
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    board[i][j] = '';
+                }
+                mainBoard[i] = null;
+            }
+            currentPlayer = 'X';
+            nextBoard = -1;
+            document.getElementById('board').style.pointerEvents = 'auto';
+            document.getElementById('resetButton').style.display = 'none';
             render();
         }
-    }
 
-    function checkDraw(subBoard) {
-        return subBoard.every(cell => cell !== '');
-    }
+        function updateScores() {
+            document.getElementById('scoreX').innerText = `X: ${scoreX}`;
+            document.getElementById('scoreO').innerText = `O: ${scoreO}`;
+        }
 
-    function makeMove(mainPos, subPos) {
-        if ((nextBoard === -1 || mainBoard[nextBoard] !== null || nextBoard === mainPos) && board[mainPos][subPos] === '' && mainBoard[mainPos] === null) {
-            board[mainPos][subPos] = currentPlayer;
-            const winner = checkWinner(board[mainPos]);
-            const draw = checkDraw(board[mainPos]);
+        function makeMove(mainPos, subPos) {
+            if ((nextBoard === -1 || mainBoard[nextBoard] !== null || nextBoard === mainPos) && board[mainPos][subPos] === '' && mainBoard[mainPos] === null) {
+                board[mainPos][subPos] = currentPlayer;
 
-            if (winner) {
-                mainBoard[mainPos] = winner;
-            } else if (draw) {
-                mainBoard[mainPos] = 'draw';
+                const winner = checkWinner(board[mainPos]);
+                const draw = checkDraw(board[mainPos]);
+
+                if (winner) {
+                    mainBoard[mainPos] = winner;
+                    const mainWinner = checkWinner(mainBoard);
+                    if (mainWinner) {
+                        if (mainWinner === 'X') {
+                            scoreX++;
+                        } else if (mainWinner === 'O') {
+                            scoreO++;
+                        }
+                        updateScores();
+                        endGame(`${mainWinner} venceu o jogo!`);
+                        return;
+                    }
+                } else if (draw) {
+                    mainBoard[mainPos] = 'draw';
+                }
+
+                if (checkMainBoardDraw() && !mainBoard.includes('X') && !mainBoard.includes('O')) {
+                    showRestartButton();
+                    alert('Empate!');
+                } else {
+                    nextBoard = mainBoard[subPos] === null ? subPos : -1;
+                    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                }
+
+                render();
             }
-            
-            nextBoard = mainBoard[subPos] === null ? subPos : -1;
-            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        }
+
+        function restartMatch() {
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    board[i][j] = '';
+                }
+                mainBoard[i] = null;
+            }
+            currentPlayer = 'X';
+            nextBoard = -1;
+            document.getElementById('board').style.pointerEvents = 'auto';
             render();
         }
-    }
 
-    render();
-</script>
+
+        function openModal() {
+            document.getElementById('rulesModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('rulesModal').style.display = 'none';
+        }
+
+        render();
+
+
+
+    </script>
 
 </body>
+
 </html>
